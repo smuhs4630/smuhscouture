@@ -5,15 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('backgroundMusic'); // Das Audio-Element
 
     let currentMediaIndex = 0;
-    let launchCount = 0;
+    let launchCount = 0; // Initialwert
+
+    // --- Zähler aus LocalStorage laden ---
+    // Versuche, den Zähler aus dem LocalStorage zu laden
+    const storedLaunchCount = localStorage.getItem('smuhsLaunchCount');
+    if (storedLaunchCount !== null && !isNaN(storedLaunchCount)) { // Prüfen, ob Wert vorhanden und gültige Zahl ist
+        launchCount = parseInt(storedLaunchCount, 10); // Konvertiere den gespeicherten String in eine Zahl
+    }
+    counterSpan.textContent = launchCount; // Zeige den geladenen Zählerstand sofort an
+
 
     // Wir simulieren das Auslesen von Medien, indem wir wissen, welche Dateitypen wir erwarten
-    // Dies ist der beste Weg für statische Seiten auf Vercel, ohne einen Build-Step,
-    // der die Dateiliste generiert.
     // Du musst sicherstellen, dass deine Dateien VIDEO1.mp4, VIDEO2.mp4, IMAGE1.jpg etc. heißen.
     const mediaFiles = [];
-    const videoCount = 3; // Passe diese Zahl an deine tatsächliche Videoanzahl an
-    const imageCount = 14; // Passe diese Zahl an deine tatsächliche Bildanzahl an
+    const videoCount = 3; // PASSE DIESE ZAHL AN DEINE TATSÄCHLICHE VIDEOANZAHL AN
+    const imageCount = 14; // PASSE DIESE ZAHL AN DEINE TATSÄCHLICHE BILDANZAHL AN
 
     for (let i = 1; i <= videoCount; i++) {
         mediaFiles.push({ type: 'video', src: `media/video${i}.mp4` });
@@ -47,7 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeSlider() {
-        mediaFiles.forEach(mediaItem => { // Verwende jetzt 'mediaFiles'
+        if (mediaFiles.length === 0) {
+            console.warn("Keine Medien zum Laden gefunden. Bitte Pfade und Anzahl überprüfen!");
+            // Optional: Fallback-Anzeige, z.B. eine Fehlermeldung oder ein Standardbild
+            sliderContainer.style.backgroundColor = '#333'; // Grauer Hintergrund als Hinweis
+            return; // Funktion beenden, wenn keine Medien da sind
+        }
+
+        mediaFiles.forEach(mediaItem => {
             sliderContainer.appendChild(createSliderItem(mediaItem));
         });
 
@@ -62,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showNextMedia() {
+        // Sicherstellen, dass überhaupt Medien geladen sind, bevor wir weitermachen
+        if (mediaFiles.length === 0) {
+            return;
+        }
+
         const currentActive = document.querySelector('.slider-item.active');
         if (currentActive) {
             // Wenn das aktuelle Element ein Video ist, pausieren wir es
@@ -70,10 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentVideo.pause();
             }
             currentActive.classList.remove('active');
-            // Keine Glitch-Effekt-Klasse mehr hinzufügen, da sie entfernt wurde
         }
 
-        currentMediaIndex = (currentMediaIndex + 1) % mediaFiles.length; // Verwende 'mediaFiles.length'
+        currentMediaIndex = (currentMediaIndex + 1) % mediaFiles.length;
         const nextActive = sliderContainer.children[currentMediaIndex];
 
         if (nextActive) {
@@ -93,12 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
     launchButton.addEventListener('click', () => {
         launchCount++;
         counterSpan.textContent = launchCount;
+        // --- Zähler in LocalStorage speichern ---
+        localStorage.setItem('smuhsLaunchCount', launchCount);
 
-        // Versuche, Musik abzuspielen, wenn der Button geklickt wird
-        if (backgroundMusic.paused) {
-            backgroundMusic.play().catch(e => {
+        // --- Musik abspielen beim Klick ---
+        // Diese Logik ist entscheidend für Browser-Autoplay-Richtlinien
+        if (backgroundMusic.paused) { // Prüfen, ob Musik pausiert ist (oder noch nicht gestartet)
+            backgroundMusic.play().then(() => {
+                console.log("Musik erfolgreich abgespielt!");
+            }).catch(e => {
                 console.error("Musik konnte nicht abgespielt werden:", e);
-                // Fehlermeldung, wenn Autoplay vom Browser blockiert wird
+                // Dies wird oft passieren, wenn der Browser Autoplay blockiert.
+                // Es kann eine Meldung in der Konsole sein, aber die Seite funktioniert.
             });
         }
     });
