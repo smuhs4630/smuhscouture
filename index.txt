@@ -23,7 +23,7 @@
         <p class="counter-text">Launches: <span id="counter">0</span></p>
     </div>
 
-    <audio id="backgroundMusic" src="media/background_music.mp3" loop></audio>
+    <audio id="backgroundMusic" src="media/Russ - April 7 (Official Video).mp3" loop></audio>
 
     <script src="script.js"></script>
 </body>
