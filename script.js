@@ -1,109 +1,166 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const sliderContainer = document.querySelector('.slider-container');
-    const launchButton = document.getElementById('launchButton');
-    const counterSpan = document.getElementById('counter');
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif; /* Fallback für den Body, falls nötig */
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #000; /* Schwarzer Hintergrund, da Videos/Bilder im Vordergrund sind */
+    color: white; /* Standardtextfarbe weiß */
+}
 
-    let currentMediaIndex = 0;
-    let launchCount = 0;
+.slider-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
 
-    // Definiere deine Medien (Videos und Bilder)
-    // Achte darauf, dass die Pfade und Dateinamen korrekt sind
-    const media = [
-        { type: 'video', src: 'media/video1.mp4' },
-        { type: 'image', src: 'media/image1.jpg' },
-        { type: 'video', src: 'media/video2.mp4' },
-        { type: 'image', src: 'media/image2.jpg' },
-        { type: 'image', src: 'media/image3.jpg' },
-        { type: 'video', src: 'media/video3.mp4' },
-        { type: 'image', src: 'media/image4.jpg' },
-        { type: 'image', src: 'media/image5.jpg' },
-        { type: 'image', src: 'media/image6.jpg' },
-        { type: 'image', src: 'media/image7.jpg' },
-        { type: 'image', src: 'media/image8.jpg' },
-        { type: 'image', src: 'media/image9.jpg' },
-        { type: 'image', src: 'media/image10.jpg' },
-        { type: 'image', src: 'media/image11.jpg' },
-        { type: 'image', src: 'media/image12.jpg' },
-        { type: 'image', src: 'media/image13.jpg' },
-        { type: 'image', src: 'media/image14.jpg' }
-    ];
+.slider-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+}
 
-    function createSliderItem(mediaItem) {
-        const div = document.createElement('div');
-        div.classList.add('slider-item');
+.slider-item.active {
+    opacity: 1;
+}
 
-        if (mediaItem.type === 'video') {
-            const video = document.createElement('video');
-            video.src = mediaItem.src;
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true; // Videos im Hintergrund sollten stumm sein
-            video.playsInline = true; // Wichtig für iOS, damit Videos automatisch abgespielt werden
-            div.appendChild(video);
-        } else if (mediaItem.type === 'image') {
-            const img = document.createElement('img');
-            img.src = mediaItem.src;
-            div.appendChild(img);
-        }
-        return div;
+.slider-item video,
+.slider-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Glitch Effekt (unverändert, da er gut zum Thema passen kann) */
+.glitch-effect {
+    animation: glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* Logo wurde entfernt, die .logo Klasse kann gelöscht werden */
+/* .logo { ... } */
+
+
+.content-overlay {
+    position: relative;
+    z-index: 2; /* Über dem Slider */
+    color: white;
+    text-align: center;
+    padding: 20px; /* Kann bei Bedarf angepasst werden */
+    /* Der Hintergrund wird hier minimal gehalten, da der Schriftzug transparent ist */
+    background-color: transparent;
+    border-radius: 10px;
+}
+
+/* --- Spezifische Styling für "smuhs" und "couture" --- */
+.smuhs-text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 8em; /* Groß für "smuhs" */
+    font-weight: 700; /* Robot hat 700wght */
+    margin: 0;
+    line-height: 1; /* Zeilenhöhe anpassen, um die Wörter nah zusammenzubringen */
+    color: rgba(255, 255, 255, 0.6); /* Leicht transparentes Weiß */
+    text-shadow: 0 0 10px rgba(0,0,0,0.5); /* Leichter Schatten für bessere Lesbarkeit auf helleren Medien */
+}
+
+.couture-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 4.5em; /* Etwas kleiner als smuhs, aber immer noch prominent */
+    margin: -10px 0 40px 0; /* Negativer Top-Margin, um näher an "smuhs" zu rücken, und Bottom-Margin zum Button */
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.7); /* Leicht transparenter als smuhs, aber gut sichtbar */
+    text-shadow: 0 0 10px rgba(0,0,0,0.5); /* Leichter Schatten */
+}
+
+/* --- Button Styling --- */
+#launchButton {
+    background-color: #CC0000; /* Sattes Rot (RGB: 204, 0, 0) */
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 2em; /* Groß für "Release!" */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-family: 'Caesar Dressing', cursive; /* Google Font: Caesar Dressing */
+    text-transform: uppercase; /* Optional: Macht den Text groß, falls gewünscht */
+    letter-spacing: 2px; /* Optional: Abstand zwischen den Buchstaben */
+    font-weight: 400; /* Caeser Dressing hat nur 400 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Dezenter Schatten für den Button */
+}
+
+#launchButton:hover {
+    background-color: #990000; /* Dunkleres Rot beim Hover */
+    transform: translateY(-3px); /* Etwas stärkerer Hover-Effekt */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.counter-text {
+    font-size: 1.2em;
+    margin-top: 20px; /* Abstand zum Button */
+    display: block;
+    color: rgba(255, 255, 255, 0.8); /* Gut lesbares Weiß */
+    font-family: 'Roboto', sans-serif; /* Passend zur smuhs Schriftart */
+    font-weight: 400;
+}
+
+/* --- Responsive Design für mobile Geräte --- */
+@media (max-width: 768px) {
+    .smuhs-text {
+        font-size: 4.5em; /* Kleinere Größe auf Mobilgeräten */
     }
 
-    function initializeSlider() {
-        media.forEach(mediaItem => {
-            sliderContainer.appendChild(createSliderItem(mediaItem));
-        });
-
-        // Zeige das erste Medium an
-        const firstItem = sliderContainer.firstElementChild;
-        if (firstItem) {
-            firstItem.classList.add('active');
-            if (firstItem.querySelector('video')) {
-                // Spiele das Video nur ab, wenn es das aktive Element ist
-                firstItem.querySelector('video').play();
-            }
-        }
+    .couture-text {
+        font-size: 2.5em; /* Kleinere Größe auf Mobilgeräten */
+        margin: -5px 0 20px 0; /* Margins anpassen */
     }
 
-    function showNextMedia() {
-        const currentActive = document.querySelector('.slider-item.active');
-        if (currentActive) {
-            // Wenn das aktuelle Element ein Video ist, pausieren wir es
-            const currentVideo = currentActive.querySelector('video');
-            if (currentVideo) {
-                currentVideo.pause();
-            }
-            currentActive.classList.remove('active');
-            currentActive.classList.add('glitch-effect'); // Glitch beim Wechsel hinzufügen
-
-            // Entferne den Glitch-Effekt nach kurzer Zeit, um den nächsten Übergang vorzubereiten
-            setTimeout(() => {
-                currentActive.classList.remove('glitch-effect');
-            }, 300); // Dauer des Glitch-Effekts
-        }
-
-        currentMediaIndex = (currentMediaIndex + 1) % media.length;
-        const nextActive = sliderContainer.children[currentMediaIndex];
-
-        if (nextActive) {
-            nextActive.classList.add('active');
-            const video = nextActive.querySelector('video');
-            if (video) {
-                video.currentTime = 0; // Setzt das Video auf den Anfang zurück
-                video.play();
-            }
-        }
+    #launchButton {
+        padding: 10px 20px;
+        font-size: 1.5em;
     }
 
-    // Slider alle paar Sekunden wechseln
-    // Du kannst die Zeit hier anpassen, z.B. 7000ms für 7 Sekunden
-    setInterval(showNextMedia, 5000); // Wechselt alle 5 Sekunden
+    .counter-text {
+        font-size: 1em;
+        margin-top: 15px;
+    }
+}
 
-    // Button-Klick-Handler
-    launchButton.addEventListener('click', () => {
-        launchCount++;
-        counterSpan.textContent = launchCount;
-    });
+/* Weitere Responsive Anpassungen bei Bedarf */
+@media (max-width: 480px) {
+    .smuhs-text {
+        font-size: 3em;
+    }
 
-    // Initialisierung des Sliders beim Laden der Seite
-    initializeSlider();
-});
+    .couture-text {
+        font-size: 1.8em;
+    }
+
+    #launchButton {
+        padding: 8px 15px;
+        font-size: 1.2em;
+    }
+}
